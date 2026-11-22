@@ -345,8 +345,8 @@ function cleanDesc(d) { var s = String(d || '').trim().replace(/^SATIŞ-\d+\*\d+
 function placeKey(d) { return cleanDesc(d).split(/[-\/*]/)[0].trim(); }
 function ruleKey(d) { return cleanDesc(d).split(/[-\/]/)[0].trim().split(/\s+/).slice(0, 2).join(' '); }
 function allRules() {
-  var u = (S.rules || []).map(function (r) { return [norm(r.k), r.cat, r.alias || '']; });
-  return u.concat(DEF.map(function (r) { return [norm(r[0]), r[1], r[2]]; }));
+  var u = (S.rules || []).map(function (r) { return [norm(r.k), r.cat, r.alias || '', r.ask === undefined ? r.cat === 'Verilen Borç' : !!r.ask]; });
+  return u.concat(DEF.map(function (r) { return [norm(r[0]), r[1], r[2], r[1] === 'Verilen Borç']; }));
 }
 function matchRule(desc) {
   var d = norm(desc), rs = allRules();
@@ -362,7 +362,7 @@ function aliasOf(t) {
 function categorize(desc, label, amt) {
   if (Math.abs(amt) <= 1) return 'Yoksay';
   var r = matchRule(desc);
-  if (r) return r[1];
+  if (r) return r[3] ? 'Kontrol Et' : r[1];
   var l = norm(label);
   if (l.indexOf('para cekme') >= 0 || l.indexOf('para yatirma') >= 0) return 'Nakit Geçişi';
   if (amt < 0 && Math.abs(amt) < KUCUK && norm(desc).indexOf('satis-') === 0) return 'Diğer';
@@ -717,8 +717,8 @@ function renderAyar() {
     '<div class="r"><div class="l">Garanti<small>PDF yüklenmeden önce elle düzeltmek için</small></div><input inputmode="decimal" id="garset" value="' + (S.anchors.garanti ? String(Math.round(balances().garanti * 100) / 100).replace('.', ',') : '') + '" placeholder="0,00" aria-label="Garanti bakiye"></div></div>' +
     '<div class="row2"><button class="btn" data-act="savebal">Kaydet</button></div></div>';
   h += '<div class="card"><h2>PDF</h2><p class="hint" style="margin:0 0 10px">Garanti\'den indirdiğin hesap hareketleri PDF\'i. Aynı hareketler tekrar yüklenirse çift kayıt olmaz.</p><button class="btn block" data-act="pdf">PDF yükle</button></div>';
-  h += '<div class="card"><h2>Kurallarım</h2><p class="hint" style="margin:0 0 6px">Bir yeri bir kez sınıflandırınca buraya eklenir. Dahili ' + DEF.length + ' hazır kural da var.</p><div class="list">' +
-    ((S.rules || []).length ? S.rules.map(function (r, i) { return '<div class="it"><span>' + esc(r.k) + ' <small>→ ' + esc(r.cat) + '</small></span><button class="btn ghost" style="padding:6px 10px" data-delrule="' + i + '">Sil</button></div>'; }).join('') : '<div class="it"><small>Henüz kendi kuralın yok.</small></div>') + '</div></div>';
+  h += '<div class="card"><h2>Kurallarım</h2><p class="hint" style="margin:0 0 6px">Kural: bir yeri (örn. MC → Beslenme) bir kez öğretince bir daha sormadan o kategoriye atar. “Hep sor” dersen önerir ama her seferinde sana sorar; kişilere giden paralar için ideal. Dahili ' + DEF.length + ' hazır kural da var.</p><div class="list">' +
+    ((S.rules || []).length ? S.rules.map(function (r, i) { return '<div class="it"><span>' + esc(r.k) + ' <small>→ ' + esc(r.cat) + '</small></span><span style="display:flex;gap:6px;flex:none"><button class="btn ghost" style="padding:6px 10px" data-askrule="' + i + '">' + ((r.ask === undefined ? r.cat === 'Verilen Borç' : r.ask) ? 'Hep sor' : 'Otomatik') + '</button><button class="btn ghost" style="padding:6px 10px" data-delrule="' + i + '">Sil</button></span></div>'; }).join('') : '<div class="it"><small>Henüz kendi kuralın yok.</small></div>') + '</div></div>';
   h += '<div class="card"><h2>Bulut yedek (Google Sheet)</h2><p class="hint" style="margin:0 0 10px">Her değişiklikte verilerin kendiliğinden Google Sheet\'ine kaydolur. Uygulamayı silsen bile buradan geri yüklersin.</p><input class="field" id="c-url" placeholder="Web uygulaması adresi (https://script.google.com/...)" value="' + esc((cloudLoad() || {}).url || '') + '"><input class="field" id="c-key" placeholder="Anahtar" value="' + esc((cloudLoad() || {}).key || '') + '" style="margin-top:8px"><div class="hint" id="cstat" style="margin-top:8px"></div><div class="row2"><button class="btn" data-act="cconnect">Kaydet</button><button class="btn ghost" data-act="cnow">Şimdi yedekle</button></div><div class="row2" style="margin-top:8px"><button class="btn ghost" data-act="cpull">Buluttan yükle</button></div><div id="cbox"></div></div>';
   h += '<div class="card"><h2>Yedek</h2><p class="hint" style="margin:0 0 10px">Veri sadece bu telefonda durur. Düzenli yedek al, yeni cihaza buradan geçersin.</p><div class="row2" style="margin-top:0"><button class="btn ghost" data-act="backup">Yedeği kopyala</button><button class="btn ghost" data-act="restore">Yedekten yükle</button></div><div id="restorebox"></div></div>';
   h += '<div class="card"><h2>Veri</h2><p class="hint" style="margin:0 0 10px">Excel veya Sheet’te elle girdiğin harcama, gelir ve bakiyeleri bir kez ekler. Tekrar basarsan çift kayıt olmaz.</p><button class="btn block" data-act="seed" style="margin-bottom:10px">Excel’deki verileri ekle</button><div class="row2" style="margin-top:0"><button class="btn ghost" data-act="demo">Örnek veri</button><button class="btn danger" data-act="wipe">Tüm veriyi sil</button></div></div>';
@@ -877,9 +877,10 @@ function openQueue() {
   var opts = inc ? ['Yoksay', 'Gelir - harçlık', 'Gelir - iş', 'Gelir - yatırım', 'Gelir - borç', 'Verilen Borç', 'Gelir - kyk'] : ['Yoksay', 'Beslenme', 'market', 'Giyim', 'Gezi ve Etkinlikler', 'hediye', 'Verilen Borç', 'Diğer', 'Ulaşım', 'Bakım/Berber', 'Spor', 'Abonelikler'];
   var key = ruleKey(t.desc), al = key.replace(/\*+/g, '').toLocaleLowerCase('tr').trim();
   DRAFT = { q: t.id, key: key };
+  var sr = matchRule(t.desc), sug = sr && sr[3] ? sr[1] : '';
   openSheetKeep('<h3>Bu nedir? <small style="color:var(--muted);font-weight:500">' + q.length + ' bekliyor</small></h3><div class="q"><div class="d">' + fdate(t.date) + ' · ' + esc(t.label || '') + '</div><div class="m num ' + (inc ? 'pos' : '') + '">' + (inc ? '+' : '−') + fmt(Math.abs(t.amt)) + '</div><div class="w">' + esc(cleanDesc(t.desc)) + '</div>' +
-    '<label><input type="checkbox" id="remember"> Bu işlemi kural olarak kaydedelim mi? Bir daha “' + esc(key) + '” gelince sormadan seçtiğin kategoriye atar. Her seferinde farklı şey için gelen kişilerde işaretleme.</label><input class="field" id="alias" value="' + esc(al) + '" placeholder="Özet\'te görünecek kısa ad (kural olursa)" aria-label="Kısa ad"></div>' +
-    '<div class="lbl">Kategori' + (opts[0] === 'Yoksay' ? ' <span style="text-transform:none;letter-spacing:0;font-weight:400">(Yoksay: gelir/gider sayma, sadece bakiye değişsin)</span>' : '') + '</div>' + catButtons(opts, '') +
+    (sug ? '<div class="hint" style="margin-top:8px">Bu isim daha önce <b>' + esc(sug) + '</b> seçilmişti. Her seferinde soruyorum, çünkü kişilere giden para her defasında farklı olabilir. Borç verdiysen Verilen Borç, kendi borcunu ödediysen Yoksay seç.</div></div>' : '<label><input type="checkbox" id="remember"> Bu işlemi kural olarak kaydedelim mi? Bir daha “' + esc(key) + '” gelince sormadan seçtiğin kategoriye atar. Her seferinde farklı şey için gelen kişilerde işaretleme.</label><input class="field" id="alias" value="' + esc(al) + '" placeholder="Özet\'te görünecek kısa ad (kural olursa)" aria-label="Kısa ad"></div>') +
+    '<div class="lbl">Kategori' + (opts[0] === 'Yoksay' ? ' <span style="text-transform:none;letter-spacing:0;font-weight:400">(Yoksay: gelir/gider sayma, sadece bakiye değişsin)</span>' : '') + '</div>' + catButtons(opts, sug) +
     '<div class="row2"><button class="btn ghost" data-act="close">Sonra</button><button class="btn ghost" data-act="splitq">Böl</button></div>');
 }
 function answerQueue(cat) {
@@ -1013,6 +1014,7 @@ document.addEventListener('click', function (e) {
   if (d.pal) { S.ui.palette = d.pal; save(); applyUI(); renderAyar(); return; }
   if (d.mode) { S.ui.mode = d.mode; S.ui.setByMe = true; save(); applyUI(); renderAyar(); return; }
   if (d.delinst) { S.installments = S.installments.filter(function (i) { return i.id !== d.delinst; }); save(); render(); return; }
+  if (d.askrule !== undefined) { var rr = S.rules[+d.askrule]; rr.ask = !(rr.ask === undefined ? rr.cat === 'Verilen Borç' : rr.ask); save(); renderAyar(); toast(rr.ask ? 'Artık her seferinde soracak' : 'Artık otomatik atayacak'); return; }
   if (d.delrule !== undefined) { S.rules.splice(+d.delrule, 1); save(); renderAyar(); return; }
   if (d.p1 !== undefined && DRAFT && DRAFT.split) { readSplit(); DRAFT.c1 = d.p1; drawSplit(); return; }
   if (d.p2 !== undefined && DRAFT && DRAFT.split) { readSplit(); DRAFT.c2 = d.p2; drawSplit(); return; }
