@@ -438,7 +438,7 @@ var DONUT = null, SELI = -1;
 function donutSelect(i) {
   var root = document.getElementById('v-ozet'); if (!root || !DONUT) return;
   var segs = root.querySelectorAll('circle.seg'), legs = root.querySelectorAll('.legend div[data-sel]'), dn = root.querySelector('.donut'), lg = root.querySelector('.legend');
-  var t1 = document.getElementById('dn1'), t2 = document.getElementById('dn2'), panel = document.getElementById('dpanel'), pin = document.getElementById('dpin');
+  var t1 = document.getElementById('dn1'), t2 = document.getElementById('dn2'), t3 = document.getElementById('dn3'), panel = document.getElementById('dpanel'), pin = document.getElementById('dpin');
   if (i === SELI) i = -1;
   SELI = i;
   segs.forEach(function (c, k) { c.classList.toggle('sel', k === i); });
@@ -446,11 +446,13 @@ function donutSelect(i) {
   dn.classList.toggle('has-sel', i >= 0); lg.classList.toggle('has-sel', i >= 0);
   var x = i >= 0 ? DONUT.top[i] : null;
   function setText() {
-    t1.textContent = x ? x.n + ' · %' + Math.round(x.v / DONUT.total * 100) : 'harcama';
+    var nm = x ? (x.n.length > 14 ? x.n.slice(0, 13) + '…' : x.n) : 'harcama';
+    t1.textContent = nm; t1.style.fontSize = nm.length > 11 ? '9.5px' : '11px';
+    document.getElementById('dn3').textContent = x ? '%' + Math.round(x.v / DONUT.total * 100) : '';
     t2.textContent = Math.round(x ? x.v : DONUT.total).toLocaleString('tr-TR');
     t1.classList.remove('sw'); t2.classList.remove('sw');
   }
-  t1.classList.add('sw'); t2.classList.add('sw'); setTimeout(setText, 160);
+  t1.classList.add('sw'); t2.classList.add('sw'); t3.classList.add('sw'); setTimeout(function () { setText(); t3.classList.remove('sw'); }, 160);
   if (!x) { panel.classList.remove('on'); return; }
   var rows = [];
   if (x.n === 'Diğerleri') {
@@ -482,7 +484,7 @@ function donut(d) {
     off += len;
   });
   return '<div class="donutwrap"><svg class="donut" viewBox="0 0 168 168" role="img" aria-label="Kategorilere göre harcama">' + segs +
-    '<text id="dn1" x="84" y="80" text-anchor="middle" style="font-size:11px">harcama</text><text id="dn2" x="84" y="100" text-anchor="middle" class="num" style="font-size:19px;font-weight:700;fill:var(--ink)">' + Math.round(total).toLocaleString('tr-TR') + '</text></svg><div class="legend">' + leg + '</div></div><div class="dpanel" id="dpanel"><div class="in" id="dpin"></div></div>';
+    '<text id="dn1" x="84" y="78" text-anchor="middle" style="font-size:11px">harcama</text><text id="dn2" x="84" y="99" text-anchor="middle" class="num" style="font-size:19px;font-weight:700;fill:var(--ink)">' + Math.round(total).toLocaleString('tr-TR') + '</text><text id="dn3" x="84" y="115" text-anchor="middle" style="font-size:10px"></text></svg><div class="legend">' + leg + '</div></div><div class="dpanel" id="dpanel"><div class="in" id="dpin"></div></div>';
 }
 function dailyBars(m, d) {
   var p = m.split('-').map(Number), n = new Date(p[0], p[1], 0).getDate(), W = 320, H = 130, padL = 6, padB = 18, padT = 8;
@@ -960,7 +962,10 @@ function seedExcel() {
     var k = 'seed|' + x[0] + '|' + x[1] + '|' + x[2]; if (keys[k]) return;
     S.tx.push({ id: uid(), date: x[0], desc: x[1], amt: x[2], cat: x[3], src: x[4], manual: true, at: at, key: k }); n++;
   });
-  if (!S.installments.some(function (i) { return i.key === 'lego'; })) S.installments.push({ id: uid(), key: 'lego', name: 'lego', amt: 355, n: 3, first: '2026-11', real: 1, cat: 'hediye', day: 13 });
+  [{ key: 'lego', name: 'lego', amt: 355.1, n: 3, first: '2026-11', real: 1, cat: 'hediye', day: 13 }, { key: 'ayakkabi', name: 'ayakkabı', amt: 963, n: 3, first: '2026-12', real: 0, cat: 'Giyim', day: 1 }].forEach(function (x) {
+    var e = S.installments.filter(function (i) { return i.key === x.key; })[0];
+    if (e) { e.amt = x.amt; } else { x.id = uid(); S.installments.push(x); }
+  });
   if (!S.seedBal) {   // Excel'deki 17 Kasım bakiyeleri, yalnızca ilk seferde
     S.anchors.nakit = { amt: 760, date: todayStr(), at: at + 1 };
     S.manual.ziraat = 3620; S.manual.istanbulkart = 95; S.seedBal = true;
