@@ -162,6 +162,26 @@ textarea.field{min-height:84px;font:12px ui-monospace,monospace}
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:60;opacity:0;transition:.3s;pointer-events:none;max-width:88%;text-align:center}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* etkileşim ve akış animasyonları */
+.donut circle.seg{cursor:pointer;transition:stroke-width .28s cubic-bezier(.3,.8,.3,1),opacity .25s,stroke-dasharray .8s}
+.donut circle.seg.sel{stroke-width:30}
+.donut.has-sel circle.seg:not(.sel){opacity:.3}
+.donut text{transition:opacity .18s;pointer-events:none}.donut text.sw{opacity:0}
+.legend div[data-sel]{cursor:pointer;border-radius:8px;padding:3px 6px;margin:-3px -6px;transition:background .2s,opacity .25s}
+.legend.has-sel div[data-sel]:not(.sel){opacity:.45}
+.legend div.sel{background:var(--soft)}
+.dpanel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .38s cubic-bezier(.3,.8,.3,1)}
+.dpanel.on{grid-template-rows:1fr}
+.dpanel>.in{overflow:hidden;min-height:0}
+.dpanel .dh{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);margin-top:14px;padding-top:12px;font-weight:600}
+.dli{display:flex;gap:10px;justify-content:space-between;padding:7px 0;font-size:13px;opacity:0;transform:translateY(6px);animation:rise .32s ease forwards;animation-delay:calc(var(--i)*.04s + .12s)}
+.dli span:first-child{color:var(--muted);min-width:0;overflow-wrap:anywhere}
+.dli b{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.view.on>.card,.view.on>.trio,.view.on>.alert{animation:rise .42s cubic-bezier(.2,.7,.2,1) both}
+.view.on>*:nth-child(2){animation-delay:.05s}.view.on>*:nth-child(3){animation-delay:.1s}.view.on>*:nth-child(4){animation-delay:.15s}.view.on>*:nth-child(5){animation-delay:.2s}.view.on>*:nth-child(n+6){animation-delay:.25s}
+.btn,.t,.chips span,.cats button{transition:transform .12s ease,background .2s,opacity .2s}
+.btn:active,.t:active,.cats button:active{transform:scale(.96)}
 @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}}
 </style>
 
@@ -292,6 +312,7 @@ function load() {
 function save() {
   var raw = JSON.stringify(S);
   try { localStorage.setItem(KEY, raw); } catch (e) { MEM = raw; }
+  cloudSoon();
 }
 
 /* ================= Yardımcılar ================= */
@@ -413,6 +434,38 @@ function chipsFor(cat, items) {
 }
 
 /* ================= Çizimler ================= */
+var DONUT = null, SELI = -1;
+function donutSelect(i) {
+  var root = document.getElementById('v-ozet'); if (!root || !DONUT) return;
+  var segs = root.querySelectorAll('circle.seg'), legs = root.querySelectorAll('.legend div[data-sel]'), dn = root.querySelector('.donut'), lg = root.querySelector('.legend');
+  var t1 = document.getElementById('dn1'), t2 = document.getElementById('dn2'), panel = document.getElementById('dpanel'), pin = document.getElementById('dpin');
+  if (i === SELI) i = -1;
+  SELI = i;
+  segs.forEach(function (c, k) { c.classList.toggle('sel', k === i); });
+  legs.forEach(function (c, k) { c.classList.toggle('sel', k === i); });
+  dn.classList.toggle('has-sel', i >= 0); lg.classList.toggle('has-sel', i >= 0);
+  var x = i >= 0 ? DONUT.top[i] : null;
+  function setText() {
+    t1.textContent = x ? x.n + ' · %' + Math.round(x.v / DONUT.total * 100) : 'harcama';
+    t2.textContent = Math.round(x ? x.v : DONUT.total).toLocaleString('tr-TR');
+    t1.classList.remove('sw'); t2.classList.remove('sw');
+  }
+  t1.classList.add('sw'); t2.classList.add('sw'); setTimeout(setText, 160);
+  if (!x) { panel.classList.remove('on'); return; }
+  var rows = [];
+  if (x.n === 'Diğerleri') {
+    var shown = DONUT.top.slice(0, 6).map(function (q) { return q.n; });
+    Object.keys(DONUT.d.cat).forEach(function (k) { if (shown.indexOf(k) < 0 && DONUT.d.cat[k] > 0 && HARIC.indexOf(k) < 0) rows.push(['', k, DONUT.d.cat[k]]); });
+    rows.sort(function (a, b) { return b[2] - a[2]; });
+  } else {
+    (DONUT.d.items[x.n] || []).slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; }).forEach(function (t) { rows.push([dayOf(t.date), aliasOf(t) || t.desc || t.cat, -t.amt]); });
+  }
+  pin.innerHTML = '<div class="dh"><span>' + esc(x.n) + '</span><span class="num">' + fmt(x.v) + '</span></div>' +
+    rows.map(function (r, k) { return '<div class="dli" style="--i:' + Math.min(k, 12) + '"><span>' + (r[0] ? r[0] + ' · ' : '') + esc(r[1]) + '</span><b>' + fmt(r[2]) + '</b></div>'; }).join('');
+  panel.classList.add('on');
+  setTimeout(function () { var r = panel.getBoundingClientRect(); if (r.bottom > innerHeight - 90) window.scrollBy({ top: r.bottom - innerHeight + 110, behavior: 'smooth' }); }, 200);
+}
+
 function donut(d) {
   var list = Object.keys(d.cat).filter(function (k) { return d.cat[k] > 0 && HARIC.indexOf(k) < 0; }).sort(function (a, b) { return d.cat[b] - d.cat[a]; });
   var top = list.slice(0, 6).map(function (k) { return { n: k, v: d.cat[k] }; });
@@ -420,15 +473,16 @@ function donut(d) {
   if (rest > 0) top.push({ n: 'Diğerleri', v: rest });
   var total = top.reduce(function (s, x) { return s + x.v; }, 0);
   if (!total) return '';
+  DONUT = { top: top, d: d, total: total };
   var R = 62, C = 2 * Math.PI * R, off = 0, segs = '', leg = '';
   top.forEach(function (x, i) {
     var len = x.v / total * C, gap = top.length > 1 ? 2 : 0, col = 'var(--c' + (i + 1) + ')';
-    segs += '<circle class="seg" cx="84" cy="84" r="' + R + '" stroke="' + col + '" stroke-dasharray="0 ' + C + '" data-len="' + Math.max(len - gap, 0.5) + '" data-c="' + C + '" stroke-dashoffset="' + (-off) + '"/>';
-    leg += '<div><i style="background:' + col + '"></i>' + esc(x.n) + '<em>%' + Math.round(x.v / total * 100) + '</em></div>';
+    segs += '<circle class="seg" data-sel="' + i + '" cx="84" cy="84" r="' + R + '" stroke="' + col + '" stroke-dasharray="0 ' + C + '" data-len="' + Math.max(len - gap, 0.5) + '" data-c="' + C + '" stroke-dashoffset="' + (-off) + '"/>';
+    leg += '<div data-sel="' + i + '" role="button" tabindex="0"><i style="background:' + col + '"></i>' + esc(x.n) + '<em>%' + Math.round(x.v / total * 100) + '</em></div>';
     off += len;
   });
   return '<div class="donutwrap"><svg class="donut" viewBox="0 0 168 168" role="img" aria-label="Kategorilere göre harcama">' + segs +
-    '<text x="84" y="80" text-anchor="middle" style="font-size:11px">harcama</text><text x="84" y="100" text-anchor="middle" class="num" style="font-size:19px;font-weight:700;fill:var(--ink)">' + Math.round(total).toLocaleString('tr-TR') + '</text></svg><div class="legend">' + leg + '</div></div>';
+    '<text id="dn1" x="84" y="80" text-anchor="middle" style="font-size:11px">harcama</text><text id="dn2" x="84" y="100" text-anchor="middle" class="num" style="font-size:19px;font-weight:700;fill:var(--ink)">' + Math.round(total).toLocaleString('tr-TR') + '</text></svg><div class="legend">' + leg + '</div></div><div class="dpanel" id="dpanel"><div class="in" id="dpin"></div></div>';
 }
 function dailyBars(m, d) {
   var p = m.split('-').map(Number), n = new Date(p[0], p[1], 0).getDate(), W = 320, H = 130, padL = 6, padB = 18, padT = 8;
@@ -471,7 +525,7 @@ function animateCharts(root) {
   root.querySelectorAll('circle.seg').forEach(function (c, i) {
     var len = c.dataset.len, C = c.dataset.c;
     if (reduce) { c.setAttribute('stroke-dasharray', len + ' ' + C); return; }
-    c.style.transition = 'stroke-dasharray .8s cubic-bezier(.2,.7,.2,1) ' + (i * 0.07) + 's';
+    c.style.transition = 'stroke-dasharray .8s cubic-bezier(.2,.7,.2,1) ' + (i * 0.07) + 's'; setTimeout(function () { c.style.transition = ''; }, 1500 + i * 70);
     requestAnimationFrame(function () { requestAnimationFrame(function () { c.setAttribute('stroke-dasharray', len + ' ' + C); }); });
   });
   root.querySelectorAll('rect.gb').forEach(function (r, i) {
@@ -508,6 +562,7 @@ function renderOzet() {
   if (S.anchors.nakit.at === 0 && !S.demo) h += '<button class="alert" data-go="ayar"><span>💵</span><b>Elindeki nakit parayı bir kez yaz</b><span class="btn" style="padding:7px 12px">Ayarlar</span></button>';
   if (d.kontrol) h += '<button class="alert" data-act="queue"><span>❓</span><b>' + d.kontrol + ' hareket kategori bekliyor</b><span class="btn" style="padding:7px 12px">Sınıflandır</span></button>';
   h += '<div class="trio"><div><span>Gelir</span><b class="pos">' + fmt0(d.gelir) + '</b></div><div><span>Harcama</span><b>' + fmt0(d.ara) + '</b></div><div><span>Fark</span><b class="' + (fark < 0 ? 'neg' : 'pos') + '">' + (fark > 0 ? '+' : '') + fmt0(fark) + '</b></div></div>';
+  SELI = -1;
   var dn = donut(d);
   if (dn) h += '<div class="card"><h2>Nereye harcadım</h2>' + dn + '</div>';
   var mx = Math.max.apply(null, EXP.map(function (k) { return Math.abs(d.cat[k] || 0); }).concat([1]));
@@ -611,7 +666,7 @@ function renderHareket() {
     var nm = t.desc ? (t.src === 'garanti' ? (aliasOf(t) || placeKey(t.desc)) : t.desc) : t.cat;
     h += '<button class="tx' + (t.cat === 'Kontrol Et' ? ' warn' : '') + '" data-edit="' + t.id + '"><div class="ic" style="background:' + catColor(t.cat) + '">' + esc(initial(t)) + '</div><div class="t"><b>' + esc(nm) + '</b><small>' + esc(t.cat) + ' · ' + (t.src === 'garanti' ? 'Garanti' : t.src === 'nakit' ? 'Nakit' : 'Elle') + '</small></div><div class="a num ' + (t.amt > 0 ? 'pos' : '') + '">' + (t.amt > 0 ? '+' : '−') + fmt(Math.abs(t.amt)) + '</div></button>';
   });
-  el.innerHTML = h;
+  el.innerHTML = h; cloudStatus();
 }
 
 function renderAnaliz() {
@@ -662,9 +717,10 @@ function renderAyar() {
   h += '<div class="card"><h2>PDF</h2><p class="hint" style="margin:0 0 10px">Garanti\'den indirdiğin hesap hareketleri PDF\'i. Aynı hareketler tekrar yüklenirse çift kayıt olmaz.</p><button class="btn block" data-act="pdf">PDF yükle</button></div>';
   h += '<div class="card"><h2>Kurallarım</h2><p class="hint" style="margin:0 0 6px">Bir yeri bir kez sınıflandırınca buraya eklenir. Dahili ' + DEF.length + ' hazır kural da var.</p><div class="list">' +
     ((S.rules || []).length ? S.rules.map(function (r, i) { return '<div class="it"><span>' + esc(r.k) + ' <small>→ ' + esc(r.cat) + '</small></span><button class="btn ghost" style="padding:6px 10px" data-delrule="' + i + '">Sil</button></div>'; }).join('') : '<div class="it"><small>Henüz kendi kuralın yok.</small></div>') + '</div></div>';
+  h += '<div class="card"><h2>Bulut yedek (Google Sheet)</h2><p class="hint" style="margin:0 0 10px">Her değişiklikte verilerin kendiliğinden Google Sheet\'ine kaydolur. Uygulamayı silsen bile buradan geri yüklersin.</p><input class="field" id="c-url" placeholder="Web uygulaması adresi (https://script.google.com/...)" value="' + esc((cloudLoad() || {}).url || '') + '"><input class="field" id="c-key" placeholder="Anahtar" value="' + esc((cloudLoad() || {}).key || '') + '" style="margin-top:8px"><div class="hint" id="cstat" style="margin-top:8px"></div><div class="row2"><button class="btn" data-act="cconnect">Kaydet</button><button class="btn ghost" data-act="cnow">Şimdi yedekle</button></div><div class="row2" style="margin-top:8px"><button class="btn ghost" data-act="cpull">Buluttan yükle</button></div><div id="cbox"></div></div>';
   h += '<div class="card"><h2>Yedek</h2><p class="hint" style="margin:0 0 10px">Veri sadece bu telefonda durur. Düzenli yedek al, yeni cihaza buradan geçersin.</p><div class="row2" style="margin-top:0"><button class="btn ghost" data-act="backup">Yedeği kopyala</button><button class="btn ghost" data-act="restore">Yedekten yükle</button></div><div id="restorebox"></div></div>';
   h += '<div class="card"><h2>Veri</h2><p class="hint" style="margin:0 0 10px">Excel veya Sheet’te elle girdiğin harcama, gelir ve bakiyeleri bir kez ekler. Tekrar basarsan çift kayıt olmaz.</p><button class="btn block" data-act="seed" style="margin-bottom:10px">Excel’deki verileri ekle</button><div class="row2" style="margin-top:0"><button class="btn ghost" data-act="demo">Örnek veri</button><button class="btn danger" data-act="wipe">Tüm veriyi sil</button></div></div>';
-  el.innerHTML = h;
+  el.innerHTML = h; cloudStatus();
 }
 
 var TITLES = { ozet: 'Özet', hareket: 'Hareketler', analiz: 'Analiz', ayar: 'Ayarlar' };
@@ -736,6 +792,44 @@ function openEdit(id) {
     '<div class="row2"><button class="btn danger" data-act="deltx">Sil</button><button class="btn ghost" data-act="split">Böl</button><button class="btn" data-act="saveedit">Kaydet</button></div>');
 }
 
+
+
+/* ----- Bulut yedek (Google Sheet, Apps Script) ----- */
+var CKEY = 'butcem.cloud', CLOUD = null, CTIMER = null, CBUSY = false;
+function cloudLoad() { try { CLOUD = JSON.parse(localStorage.getItem(CKEY) || 'null'); } catch (e) { CLOUD = null; } return CLOUD; }
+function cloudSave() { try { localStorage.setItem(CKEY, JSON.stringify(CLOUD)); } catch (e) {} }
+function cloudSoon() {
+  if (!cloudLoad() || !CLOUD.url || S.demo) return;
+  clearTimeout(CTIMER); CTIMER = setTimeout(cloudPush, 2500);
+}
+function cloudStatus() {
+  var el = document.getElementById('cstat'); if (!el) return;
+  var c = cloudLoad();
+  el.textContent = !c || !c.url ? 'Bağlı değil.' : c.err ? 'Son yedek alınamadı: ' + c.err : c.last ? 'Son yedek: ' + new Date(c.last).toLocaleString('tr-TR') : 'Bağlandı, henüz yedek alınmadı.';
+}
+function cloudPush(manual) {
+  var c = cloudLoad(); if (!c || !c.url || CBUSY || S.demo) return;
+  if (!S.tx.length && !(S.installments || []).length) { if (manual) toast('Boş veri yedeklenmez'); return; }
+  CBUSY = true;
+  fetch(c.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ k: c.key, action: 'save', data: S }) })
+    .then(function (r) { return r.json(); })
+    .then(function (j) { CBUSY = false; cloudLoad(); if (j && j.ok) { CLOUD.last = Date.now(); CLOUD.err = ''; if (manual) toast('Yedeklendi'); } else { CLOUD.err = (j && j.err) || 'bilinmeyen hata'; if (manual) toast('Yedeklenemedi'); } cloudSave(); cloudStatus(); })
+    .catch(function () { CBUSY = false; cloudLoad(); CLOUD.err = 'internet yok'; cloudSave(); cloudStatus(); if (manual) toast('Yedeklenemedi, internet?'); });
+}
+function cloudPull() {
+  var c = cloudLoad(); if (!c || !c.url) { toast('Önce bağla'); return; }
+  toast('Yükleniyor…');
+  fetch(c.url + (c.url.indexOf('?') < 0 ? '?' : '&') + 'k=' + encodeURIComponent(c.key))
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      if (!j || !j.ok || !j.data || !j.data.tx) { toast('Bulutta yedek bulunamadı'); return; }
+      var d = j.data, box = document.getElementById('cbox');
+      PULL = d;
+      if (box) box.innerHTML = '<div class="q" style="margin-top:12px"><b>Buluttaki yedekte ' + d.tx.length + ' hareket var.</b><div class="hint">Yüklersen şu anki veriler bununla değişir.</div><div class="row2"><button class="btn ghost" data-act="cpullno">Vazgeç</button><button class="btn" data-act="cpullyes">Yükle</button></div></div>';
+    })
+    .catch(function () { toast('Bağlanamadı, internet?'); });
+}
+var PULL = null;
 
 /* ----- Harcamayı böl ----- */
 function catBtns2(list, sel, attr) { return '<div class="cats">' + list.map(function (c) { return '<button data-' + attr + '="' + esc(c) + '" class="' + (c === sel ? 'on' : '') + '">' + esc(c.replace('Gelir - ', '')) + '</button>'; }).join('') + '</div>'; }
@@ -901,8 +995,9 @@ function loadDemo() {
 
 /* ================= Olaylar ================= */
 document.addEventListener('click', function (e) {
-  var b = e.target.closest('button,[data-edit]'); if (!b) { if (e.target.id === 'scrim') closeSheet(); return; }
+  var b = e.target.closest('button,[data-edit],[data-sel]'); if (!b) { if (e.target.id === 'scrim') closeSheet(); return; }
   var d = b.dataset;
+  if (d.sel !== undefined) { donutSelect(+d.sel); return; }
   if (d.go) { VIEW = d.go; render(); window.scrollTo(0, 0); return; }
   if (b.id === 'addbtn') { openAdd('harcama'); return; }
   if (d.m) { MONTH = addMonth(MONTH, +d.m); render(); return; }
@@ -945,6 +1040,11 @@ document.addEventListener('click', function (e) {
     if (!isNaN(gr)) S.anchors.garanti = { amt: gr, date: todayStr(), at: at };
     save(); render(); toast('Bakiyeler kaydedildi');
   }
+  else if (act === 'cconnect') { var u = document.getElementById('c-url').value.trim(), kk = document.getElementById('c-key').value.trim(); if (!/^https:\/\/script\.google\.com\//.test(u) || !kk) { toast('Adres ve anahtarı yaz'); return; } CLOUD = { url: u, key: kk, last: 0, err: '' }; cloudSave(); cloudStatus(); toast('Kaydedildi'); if (S.tx.length) cloudPush(true); }
+  else if (act === 'cnow') { cloudPush(true); }
+  else if (act === 'cpull') { cloudPull(); }
+  else if (act === 'cpullno') { PULL = null; document.getElementById('cbox').innerHTML = ''; }
+  else if (act === 'cpullyes') { if (PULL && PULL.tx) { S = PULL; PULL = null; if (!S.use) S.use = {}; if (!S.installments) S.installments = []; if (!S.ui || !S.ui.v2) S.ui = { palette: 'komur', mode: 'dark', setByMe: true, v2: 1 }; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} applyUI(); render(); toast('Buluttan yüklendi'); } }
   else if (act === 'backup') {
     var txt = JSON.stringify(S);
     (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function () { toast('Yedek panoya kopyalandı. Bir yere yapıştırıp sakla.'); }, function () {
