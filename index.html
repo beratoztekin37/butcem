@@ -1,6 +1,6 @@
-<title>Bütçem</title>
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Bütçem</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#1f5f66"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#121110"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
 /* Düzen: tek sütunlu telefon uygulaması; altta sekme çubuğu, ortada + düğmesi. Renk: Excel'deki petrol yeşili + amber vurgu. */
@@ -280,14 +280,14 @@ var DEF = [
 var S = null, VIEW = 'ozet', MONTH = '', FILTER = '', QUERY = '', OPEN = {}, PENDING = [], DRAFT = null, MEM = null;
 var KEY = 'butcem.v1';
 
-function emptyState() { return { v: 1, tx: [], rules: [], anchors: { garanti: null, nakit: { amt: 0, date: '2000-01-01', at: 0 } }, manual: { ziraat: 0, yatirim: 0, istanbulkart: 0 }, demo: false, use: {}, installments: [], ui: { palette: 'petrol', mode: 'auto' } }; }
+function emptyState() { return { v: 1, tx: [], rules: [], anchors: { garanti: null, nakit: { amt: 0, date: '2000-01-01', at: 0 } }, manual: { ziraat: 0, yatirim: 0, istanbulkart: 0 }, demo: false, use: {}, installments: [], ui: { palette: 'komur', mode: 'dark', setByMe: true, v2: 1 } }; }
 function load() {
   var raw = null;
   try { raw = localStorage.getItem(KEY); } catch (e) { raw = MEM; }
   try { S = raw ? JSON.parse(raw) : emptyState(); } catch (e) { S = emptyState(); }
   if (!S.use) S.use = {};
   if (!S.installments) S.installments = [];
-  if (!S.ui) S.ui = { palette: 'petrol', mode: 'auto' };
+  if (!S.ui || !S.ui.v2) S.ui = { palette: 'komur', mode: 'dark', setByMe: true, v2: 1 };
 }
 function save() {
   var raw = JSON.stringify(S);
@@ -941,3 +941,5 @@ MONTH = mk(todayStr());
 render();
 setTimeout(function () { document.getElementById('splash').classList.add('gone'); }, 1700);
 </script>
+
+<script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})</script>
