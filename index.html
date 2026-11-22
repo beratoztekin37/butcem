@@ -1,6 +1,6 @@
 <!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Bütçem</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#121110"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="manifest" href="manifest.json"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#121110"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
 /* Düzen: tek sütunlu telefon uygulaması; altta sekme çubuğu, ortada + düğmesi. Renk: Excel'deki petrol yeşili + amber vurgu. */
@@ -733,7 +733,43 @@ function openEdit(id) {
   DRAFT = { edit: id, cat: t.cat };
   openSheetKeep('<h3>' + esc(t.desc ? (t.src === 'garanti' ? placeKey(t.desc) : t.desc) : t.cat) + '</h3><div class="q" style="box-shadow:none;background:var(--soft)"><div class="d">' + fdate(t.date) + ' · ' + (t.src === 'garanti' ? 'Garanti' : 'Nakit/Elle') + '</div><div class="m">' + (t.amt > 0 ? '+' : '−') + fmt(Math.abs(t.amt)) + '</div></div>' +
     '<div class="lbl">Kategori</div>' + catButtons(list, t.cat) +
-    '<div class="row2"><button class="btn danger" data-act="deltx">Sil</button><button class="btn" data-act="saveedit">Kaydet</button></div>');
+    '<div class="row2"><button class="btn danger" data-act="deltx">Sil</button><button class="btn ghost" data-act="split">Böl</button><button class="btn" data-act="saveedit">Kaydet</button></div>');
+}
+
+
+/* ----- Harcamayı böl ----- */
+function catBtns2(list, sel, attr) { return '<div class="cats">' + list.map(function (c) { return '<button data-' + attr + '="' + esc(c) + '" class="' + (c === sel ? 'on' : '') + '">' + esc(c.replace('Gelir - ', '')) + '</button>'; }).join('') + '</div>'; }
+function openSplit(id) {
+  var t = S.tx.filter(function (x) { return x.id === id; })[0]; if (!t) return;
+  DRAFT = { split: id, a: '', c1: '', c2: '' };
+  drawSplit();
+}
+function readSplit() { var a = document.getElementById('sp-a'); if (a) DRAFT.a = a.value; }
+function drawSplit() {
+  var t = S.tx.filter(function (x) { return x.id === DRAFT.split; })[0]; if (!t) return;
+  var tot = Math.abs(t.amt), a = parseFloat(String(DRAFT.a).replace(/\./g, '').replace(',', '.')), rest = a > 0 && a < tot ? Math.round((tot - a) * 100) / 100 : null;
+  var list = t.amt > 0 ? INC_SIRA : SIRA;
+  openSheetKeep('<h3>Harcamayı böl</h3><div class="q" style="box-shadow:none;background:var(--soft)"><div class="d">' + fdate(t.date) + ' · ' + esc(placeKey(t.desc || t.cat)) + '</div><div class="m">' + (t.amt > 0 ? '+' : '−') + fmt(tot) + '</div></div>' +
+    '<div class="lbl">1. parça tutarı</div><input class="amt" id="sp-a" inputmode="decimal" placeholder="0" value="' + esc(DRAFT.a) + '" aria-label="1. parça tutarı">' +
+    '<div class="lbl">1. parça kategorisi</div>' + catBtns2(list, DRAFT.c1, 'p1') +
+    '<div class="lbl">2. parça: ' + (rest !== null ? fmt(rest) : 'kalan tutar') + '</div>' + catBtns2(list, DRAFT.c2, 'p2') +
+    '<div class="row2"><button class="btn ghost" data-act="close">Vazgeç</button><button class="btn" data-act="savesplit">Böl</button></div>');
+}
+function saveSplit() {
+  readSplit();
+  var t = S.tx.filter(function (x) { return x.id === DRAFT.split; })[0]; if (!t) return;
+  var tot = Math.abs(t.amt), a = parseFloat(String(DRAFT.a).replace(/\./g, '').replace(',', '.'));
+  if (!(a > 0 && a < tot)) { toast('1. parça tutarı toplamdan küçük olmalı'); return; }
+  if (!DRAFT.c1 || !DRAFT.c2) { toast('İki parça için de kategori seç'); return; }
+  var b = Math.round((tot - a) * 100) / 100, sg = t.amt > 0 ? 1 : -1;
+  var p2 = {}; for (var k in t) p2[k] = t[k];
+  t.amt = sg * a; t.cat = DRAFT.c1;
+  p2.id = uid(); p2.amt = sg * b; p2.cat = DRAFT.c2; p2.key = 'split|' + t.key + '|' + p2.id; p2.split = true;
+  t.split = true;
+  S.tx.push(p2);
+  S.use[DRAFT.c1] = (S.use[DRAFT.c1] || 0) + 1; S.use[DRAFT.c2] = (S.use[DRAFT.c2] || 0) + 1;
+  save(); closeSheet(); render(); toast('İkiye bölündü');
+  if (queue().length) setTimeout(openQueue, 300);
 }
 
 /* Kategorisiz hareketlerin sorulması */
@@ -748,7 +784,7 @@ function openQueue() {
   openSheetKeep('<h3>Bu nedir? <small style="color:var(--muted);font-weight:500">' + q.length + ' bekliyor</small></h3><div class="q"><div class="d">' + fdate(t.date) + ' · ' + esc(t.label || '') + '</div><div class="m num ' + (inc ? 'pos' : '') + '">' + (inc ? '+' : '−') + fmt(Math.abs(t.amt)) + '</div><div class="w">' + esc(cleanDesc(t.desc)) + '</div>' +
     '<label><input type="checkbox" id="remember" checked> “' + esc(key) + '” için hep böyle say</label><input class="field" id="alias" value="' + esc(al) + '" placeholder="Özet\'te görünecek kısa ad" aria-label="Kısa ad"></div>' +
     '<div class="lbl">Kategori' + (opts[0] === 'Yoksay' ? ' <span style="text-transform:none;letter-spacing:0;font-weight:400">(Yoksay: gelir/gider sayma, sadece bakiye değişsin)</span>' : '') + '</div>' + catButtons(opts, '') +
-    '<div class="row2"><button class="btn ghost" data-act="close">Sonra</button></div>');
+    '<div class="row2"><button class="btn ghost" data-act="close">Sonra</button><button class="btn ghost" data-act="splitq">Böl</button></div>');
 }
 function answerQueue(cat) {
   var id = DRAFT.q, key = DRAFT.key, rem = document.getElementById('remember') && document.getElementById('remember').checked;
@@ -808,7 +844,7 @@ function importPDF() {
 function seedExcel() {
   // kural değişince eski Garanti hareketlerini yeniden sınıfla (Gratis artık market)
   S.tx.forEach(function (t) {
-    if (t.src !== 'garanti' || ['Diğer', 'Bakım/Berber', 'Spor', 'Gezi ve Etkinlikler'].indexOf(t.cat) < 0) return;
+    if (t.split || t.src !== 'garanti' || ['Diğer', 'Bakım/Berber', 'Spor', 'Gezi ve Etkinlikler'].indexOf(t.cat) < 0) return;
     var r = matchRule(t.desc); if (r && r[1] !== t.cat) t.cat = r[1];
   });
   var Y = '2026-11-', L = [
@@ -878,6 +914,8 @@ document.addEventListener('click', function (e) {
   if (d.mode) { S.ui.mode = d.mode; S.ui.setByMe = true; save(); applyUI(); renderAyar(); return; }
   if (d.delinst) { S.installments = S.installments.filter(function (i) { return i.id !== d.delinst; }); save(); render(); return; }
   if (d.delrule !== undefined) { S.rules.splice(+d.delrule, 1); save(); renderAyar(); return; }
+  if (d.p1 !== undefined && DRAFT && DRAFT.split) { readSplit(); DRAFT.c1 = d.p1; drawSplit(); return; }
+  if (d.p2 !== undefined && DRAFT && DRAFT.split) { readSplit(); DRAFT.c2 = d.p2; drawSplit(); return; }
   if (d.pick !== undefined) {
     if (DRAFT && DRAFT.q) { answerQueue(d.pick); return; }
     if (DRAFT && DRAFT.inst) { readTaksit(); DRAFT.cat = d.pick; drawTaksit(); return; }
@@ -896,6 +934,9 @@ document.addEventListener('click', function (e) {
   else if (act === 'demo') { loadDemo(); toast('Örnek veri yüklendi'); }
   else if (act === 'clear') { S = emptyState(); save(); render(); }
   else if (act === 'saveedit') { var t = S.tx.filter(function (x) { return x.id === DRAFT.edit; })[0]; if (t) { t.cat = DRAFT.cat; S.use[t.cat] = (S.use[t.cat] || 0) + 1; } save(); closeSheet(); render(); }
+  else if (act === 'split') { openSplit(DRAFT.edit); }
+  else if (act === 'splitq') { openSplit(DRAFT.q); }
+  else if (act === 'savesplit') { saveSplit(); }
   else if (act === 'deltx') { S.tx = S.tx.filter(function (x) { return x.id !== DRAFT.edit; }); save(); closeSheet(); render(); toast('Silindi'); }
   else if (act === 'savebal') {
     function num(id) { var v = document.getElementById(id).value; return parseFloat(String(v).replace(/\./g, '').replace(',', '.')); }
