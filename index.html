@@ -782,7 +782,7 @@ function openQueue() {
   var key = ruleKey(t.desc), al = key.replace(/\*+/g, '').toLocaleLowerCase('tr').trim();
   DRAFT = { q: t.id, key: key };
   openSheetKeep('<h3>Bu nedir? <small style="color:var(--muted);font-weight:500">' + q.length + ' bekliyor</small></h3><div class="q"><div class="d">' + fdate(t.date) + ' · ' + esc(t.label || '') + '</div><div class="m num ' + (inc ? 'pos' : '') + '">' + (inc ? '+' : '−') + fmt(Math.abs(t.amt)) + '</div><div class="w">' + esc(cleanDesc(t.desc)) + '</div>' +
-    '<label><input type="checkbox" id="remember" checked> “' + esc(key) + '” için hep böyle say</label><input class="field" id="alias" value="' + esc(al) + '" placeholder="Özet\'te görünecek kısa ad" aria-label="Kısa ad"></div>' +
+    '<label><input type="checkbox" id="remember"> Bu işlemi kural olarak kaydedelim mi? Bir daha “' + esc(key) + '” gelince sormadan seçtiğin kategoriye atar. Her seferinde farklı şey için gelen kişilerde işaretleme.</label><input class="field" id="alias" value="' + esc(al) + '" placeholder="Özet\'te görünecek kısa ad (kural olursa)" aria-label="Kısa ad"></div>' +
     '<div class="lbl">Kategori' + (opts[0] === 'Yoksay' ? ' <span style="text-transform:none;letter-spacing:0;font-weight:400">(Yoksay: gelir/gider sayma, sadece bakiye değişsin)</span>' : '') + '</div>' + catButtons(opts, '') +
     '<div class="row2"><button class="btn ghost" data-act="close">Sonra</button><button class="btn ghost" data-act="splitq">Böl</button></div>');
 }
