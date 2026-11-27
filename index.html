@@ -275,17 +275,17 @@ if (typeof module !== 'undefined') module.exports = { parseGarantiPages, parseTR
 
 /* ================= Veri ve kurallar ================= */
 var EXP = ['market','Beslenme','Ulaşım','Bakım/Berber','Giyim','Spor','Gezi ve Etkinlikler','hediye','Abonelikler','Benzin','Yatırım','Araç ödemeleri','Verilen Borç','Diğer'];
-var INC = ['Gelir - kyk','Gelir - bağcılar burs','Gelir - harçlık','Gelir - iş','Gelir - yatırım','Gelir - borç'];
+var INC = ['Gelir - kyk','Gelir - bağcılar burs','Gelir - ibb burs','Gelir - harçlık','Gelir - iş','Gelir - yatırım','Gelir - borç'];
 var HARIC = ['Verilen Borç','Yatırım'];                    // analizde sayılmaz
-var NAKIT_DISI = ['Abonelikler','Gelir - kyk','Gelir - bağcılar burs'];
+var NAKIT_DISI = ['Abonelikler','Gelir - kyk','Gelir - bağcılar burs','Gelir - ibb burs'];
 var SIRA = ['Beslenme','market','Ulaşım','Abonelikler','Spor','Bakım/Berber','Giyim','Gezi ve Etkinlikler','Benzin','hediye','Araç ödemeleri','Yatırım','Verilen Borç','Diğer'];
-var INC_SIRA = ['Gelir - kyk','Gelir - bağcılar burs','Gelir - harçlık','Gelir - iş','Gelir - yatırım','Gelir - borç'];
+var INC_SIRA = ['Gelir - kyk','Gelir - bağcılar burs','Gelir - ibb burs','Gelir - harçlık','Gelir - iş','Gelir - yatırım','Gelir - borç'];
 var KUCUK = 50;
 var ACCOUNTS = [['garanti','Garanti'],['ziraat','Ziraat'],['nakit','Nakit'],['yatirim','Yatırım'],['istanbulkart','İstanbulkart']];
 var DEF = [
  ['FİLE MARKET','market','file'],['MİGROS','market','migros'],['GETİR','market','getir'],['BIM ','market','bim'],['A101','market','a101'],['ŞOK','market','şok'],['BAKKAL','market','bakkal'],['CARREFOUR','market','carrefour'],['MACROCENTER','market','macro'],['HAKMAR','market','hakmar'],['KİLER','market','kiler'],
  ['GRATIS','market','gratis'],['WATSONS','Bakım/Berber','watsons'],['ROSSMANN','Bakım/Berber','rossmann'],['SEPHORA','Bakım/Berber','sephora'],['BERBER','Bakım/Berber','berber'],['KUAFÖR','Bakım/Berber','kuaför'],
- ['MC DONALD','Beslenme','mc'],['BURGER KİNG','Beslenme','bking'],['POPEYES','Beslenme','popeyes'],['OSES','Beslenme','çiköfte'],['IKIZLER TANBU','Beslenme','tunba'],['DÜRÜM','Beslenme','dürüm'],['KÖFTE','Beslenme','köfte'],['DÖNER','Beslenme','döner'],['KFC','Beslenme','kfc'],['DOMINO','Beslenme','dominos'],['PIZZA HUT','Beslenme','pizzahut'],['STARBUCKS','Beslenme','starbucks'],['SUBWAY','Beslenme','subway'],['TAVUK DÜNYASI','Beslenme','tavukdünyası'],['KAHVE DÜNYASI','Beslenme','kahvedünyası'],['SİMİT SARAYI','Beslenme','simitsarayı'],['YEMEKSEPETİ','Beslenme','yemeksepeti'],['PASTANE','Beslenme','pastane'],
+ ['MC DONALD','Beslenme','mc'],['BURGER KİNG','Beslenme','bking'],['POPEYES','Beslenme','popeyes'],['OSES','Beslenme','çiköfte'],['IKIZLER TANBU','Beslenme','tanbu'],['DÜRÜM','Beslenme','dürüm'],['KÖFTE','Beslenme','köfte'],['DÖNER','Beslenme','döner'],['KFC','Beslenme','kfc'],['DOMINO','Beslenme','dominos'],['PIZZA HUT','Beslenme','pizzahut'],['STARBUCKS','Beslenme','starbucks'],['SUBWAY','Beslenme','subway'],['TAVUK DÜNYASI','Beslenme','tavukdünyası'],['KAHVE DÜNYASI','Beslenme','kahvedünyası'],['SİMİT SARAYI','Beslenme','simitsarayı'],['YEMEKSEPETİ','Beslenme','yemeksepeti'],['PASTANE','Beslenme','pastane'],
  ['İSTANBULKART','Ulaşım','ikart'],['AKBİL','Ulaşım','akbil'],['BELBİM','Ulaşım','belbim'],['İETT','Ulaşım','iett'],['UBER','Ulaşım','uber'],['BİTAKSİ','Ulaşım','bitaksi'],['MARTI','Ulaşım','martı'],
  ['HGS','Araç ödemeleri','hgs'],['OTOPARK','Araç ödemeleri','otopark'],['İSPARK','Araç ödemeleri','ispark'],
  ['OPET','Benzin','opet'],['SHELL','Benzin','shell'],['PETROL OFİSİ','Benzin','po'],['AYTEMİZ','Benzin','aytemiz'],['LUKOIL','Benzin','lukoil'],['ALPET','Benzin','alpet'],
@@ -294,7 +294,8 @@ var DEF = [
  ['DECATHLON','Spor','decathlon'],['INTERSPORT','Spor','intersport'],['FITNESS','Spor','fitness'],
  ['CINEMAXIMUM','Gezi ve Etkinlikler','cinemaximum'],['BİLETİNİAL','Gezi ve Etkinlikler','biletinial'],['SİNEMA','Gezi ve Etkinlikler','sinema'],
  ['HAPPY CENTER','market','happy'],['BAHAR RESTORAN','Beslenme','nevada'],
- ['MIDAS','Yatırım','midas'],['ENNOVA','Diğer','ennova']
+ ['MIDAS','Yatırım','midas'],['ENNOVA','Diğer','ennova'],
+ ['MOSSY','Beslenme','mossy'],['COFFENING','Beslenme','coffening'],['DOYUYO','Beslenme','doyuyo'],['ÇİĞKÖFTE','Beslenme','çiğköfte'],['TANTUNİ','Beslenme','tantuni'],['KEBAP','Beslenme','kebap'],['BÖREK','Beslenme','börek'],['KÜNEFE','Beslenme','künefe'],['NEVADA','Beslenme','nevada'],['STEAM','Gezi ve Etkinlikler','steam'],['VODAFONE','Abonelikler','vodafone']
 ];
 
 var S = null, VIEW = 'ozet', MONTH = '', FILTER = '', QUERY = '', OPEN = {}, PENDING = [], DRAFT = null, MEM = null;
@@ -714,14 +715,16 @@ function renderAyar() {
     '</div><div class="cats">' + Object.keys(PALS).map(function (k) { return '<button data-pal="' + k + '" class="' + (S.ui.palette === k ? 'on' : '') + '" style="display:inline-flex;gap:8px;align-items:center"><i style="width:14px;height:14px;border-radius:50%;background:' + PALS[k].sw + ';display:inline-block"></i>' + PALS[k].n + '</button>'; }).join('') + '</div></div>';
   h += '<div class="card"><h2>Bakiyeler</h2><div class="bal">' +
     '<div class="r"><div class="l">Nakit (şu an elimdeki)<small>Bir kez yaz, sonrası otomatik</small></div><input inputmode="decimal" id="nakitset" value="' + String(Math.round(balances().nakit * 100) / 100).replace('.', ',') + '" aria-label="Nakit bakiye"></div>' +
-    '<div class="r"><div class="l">Garanti<small>PDF yüklenmeden önce elle düzeltmek için</small></div><input inputmode="decimal" id="garset" value="' + (S.anchors.garanti ? String(Math.round(balances().garanti * 100) / 100).replace('.', ',') : '') + '" placeholder="0,00" aria-label="Garanti bakiye"></div></div>' +
+    '<div class="r"><div class="l">Garanti<small>PDF yüklenmeden önce elle düzeltmek için</small></div><input inputmode="decimal" id="garset" value="' + (S.anchors.garanti ? String(Math.round(balances().garanti * 100) / 100).replace('.', ',') : '') + '" placeholder="0,00" aria-label="Garanti bakiye"></div>' +
+    '<div class="r"><div class="l">Ziraat<small>Elle yaz</small></div><input inputmode="decimal" id="zirset" value="' + (S.manual.ziraat ? String(S.manual.ziraat).replace('.', ',') : '') + '" placeholder="0,00" aria-label="Ziraat bakiye"></div>' +
+    '<div class="r"><div class="l">İstanbulkart<small>Elle yaz</small></div><input inputmode="decimal" id="ikset" value="' + (S.manual.istanbulkart ? String(S.manual.istanbulkart).replace('.', ',') : '') + '" placeholder="0,00" aria-label="İstanbulkart bakiye"></div></div>' +
     '<div class="row2"><button class="btn" data-act="savebal">Kaydet</button></div></div>';
   h += '<div class="card"><h2>PDF</h2><p class="hint" style="margin:0 0 10px">Garanti\'den indirdiğin hesap hareketleri PDF\'i. Aynı hareketler tekrar yüklenirse çift kayıt olmaz.</p><button class="btn block" data-act="pdf">PDF yükle</button></div>';
   h += '<div class="card"><h2>Kurallarım</h2><p class="hint" style="margin:0 0 6px">Kural: bir yeri (örn. MC → Beslenme) bir kez öğretince bir daha sormadan o kategoriye atar. “Hep sor” dersen önerir ama her seferinde sana sorar; kişilere giden paralar için ideal. Dahili ' + DEF.length + ' hazır kural da var.</p><div class="list">' +
     ((S.rules || []).length ? S.rules.map(function (r, i) { return '<div class="it"><span>' + esc(r.k) + ' <small>→ ' + esc(r.cat) + '</small></span><span style="display:flex;gap:6px;flex:none"><button class="btn ghost" style="padding:6px 10px" data-askrule="' + i + '">' + ((r.ask === undefined ? r.cat === 'Verilen Borç' : r.ask) ? 'Hep sor' : 'Otomatik') + '</button><button class="btn ghost" style="padding:6px 10px" data-delrule="' + i + '">Sil</button></span></div>'; }).join('') : '<div class="it"><small>Henüz kendi kuralın yok.</small></div>') + '</div></div>';
   h += '<div class="card"><h2>Bulut yedek (Google Sheet)</h2><p class="hint" style="margin:0 0 10px">Her değişiklikte verilerin kendiliğinden Google Sheet\'ine kaydolur. Uygulamayı silsen bile buradan geri yüklersin.</p><input class="field" id="c-url" placeholder="Web uygulaması adresi (https://script.google.com/...)" value="' + esc((cloudLoad() || {}).url || '') + '"><input class="field" id="c-key" placeholder="Anahtar" value="' + esc((cloudLoad() || {}).key || '') + '" style="margin-top:8px"><div class="hint" id="cstat" style="margin-top:8px"></div><div class="row2"><button class="btn" data-act="cconnect">Kaydet</button><button class="btn ghost" data-act="cnow">Şimdi yedekle</button></div><div class="row2" style="margin-top:8px"><button class="btn ghost" data-act="cpull">Buluttan yükle</button></div><div id="cbox"></div></div>';
   h += '<div class="card"><h2>Yedek</h2><p class="hint" style="margin:0 0 10px">Veri sadece bu telefonda durur. Düzenli yedek al, yeni cihaza buradan geçersin.</p><div class="row2" style="margin-top:0"><button class="btn ghost" data-act="backup">Yedeği kopyala</button><button class="btn ghost" data-act="restore">Yedekten yükle</button></div><div id="restorebox"></div></div>';
-  h += '<div class="card"><h2>Veri</h2><p class="hint" style="margin:0 0 10px">Excel veya Sheet’te elle girdiğin harcama, gelir ve bakiyeleri bir kez ekler. Tekrar basarsan çift kayıt olmaz.</p><button class="btn block" data-act="seed" style="margin-bottom:10px">Excel’deki verileri ekle</button><div class="row2" style="margin-top:0"><button class="btn ghost" data-act="demo">Örnek veri</button><button class="btn danger" data-act="wipe">Tüm veriyi sil</button></div></div>';
+  h += '<div class="card"><h2>Veri</h2><p class="hint" style="margin:0 0 10px">Excel veya Sheet’te elle girdiğin harcama, gelir ve bakiyeleri bir kez ekler. Tekrar basarsan çift kayıt olmaz.</p><button class="btn block" data-act="seed" style="margin-bottom:10px">Excel’deki verileri ekle</button><button class="btn ghost block" data-act="gecmis" style="margin-bottom:10px">Geçmiş 13 ayı ekle (Ekim 25 – Ekim 26)</button><div class="row2" style="margin-top:0"><button class="btn ghost" data-act="demo">Örnek veri</button><button class="btn danger" data-act="wipe">Tüm veriyi sil</button></div></div>';
   el.innerHTML = h; cloudStatus();
 }
 
@@ -739,10 +742,10 @@ function render() {
 function openSheet(html) { document.getElementById('sheetbody').innerHTML = html; document.getElementById('sheet').classList.add('on'); document.getElementById('scrim').classList.add('on'); document.getElementById('sheet').scrollTop = 0; }
 function closeSheet() { document.getElementById('sheet').classList.remove('on'); document.getElementById('scrim').classList.remove('on'); DRAFT = null; }
 function sortedCats(kind) {
-  var base = kind === 'gelir' ? INC_SIRA : SIRA;
+  var base = kind === 'gelir' ? INC_SIRA.concat(['Verilen Borç']) : SIRA;
   return base.slice().sort(function (a, b) { var d = (S.use[b] || 0) - (S.use[a] || 0); return d || base.indexOf(a) - base.indexOf(b); });
 }
-function catButtons(list, sel) { return '<div class="cats">' + list.map(function (c) { return '<button data-pick="' + esc(c) + '" class="' + (c === sel ? 'on' : '') + '">' + esc(c.replace('Gelir - ', '')) + '</button>'; }).join('') + '</div>'; }
+function catButtons(list, sel) { return '<div class="cats">' + list.map(function (c) { return '<button data-pick="' + esc(c) + '" class="' + (c === sel ? 'on' : '') + '">' + esc(c === 'Nakit Geçişi' ? 'Para çekme/yatırma' : c.replace('Gelir - ', '')) + '</button>'; }).join('') + '</div>'; }
 
 function openAdd(kind) {
   var t = todayStr();
@@ -760,6 +763,7 @@ function drawAdd() {
     '<input class="amt" id="f-amt" inputmode="decimal" placeholder="0" value="' + esc(D.amt) + '" aria-label="Tutar">' +
     '<div class="lbl">' + (D.kind === 'gelir' ? 'Nereden kazandım' : 'Neye harcadım') + '</div>' + catButtons(list, D.cat) +
     '<input class="field" id="f-desc" placeholder="Açıklama (istersen)" value="' + esc(D.desc) + '">' +
+    (D.kind === 'gelir' ? '' : '<input class="field" id="f-share" inputmode="decimal" placeholder="Ortak harcama mı? Bana düşen pay (boşsa hepsi benim)" value="' + esc(D.share || '') + '" style="margin-top:8px"><div class="hint">Örn. 1.800 ödedin, payın 600: buraya 600 yaz. Kalan 1.200 arkadaşlardan alacak olarak yazılır.</div>') +
     '<div class="lbl">Tarih</div><input class="field" id="f-date" type="date" value="' + D.date + '" style="margin-top:6px">' +
     '<div class="row2"><button class="btn ghost" data-act="close">Vazgeç</button><button class="btn" data-act="saveadd">Kaydet</button></div>');
 }
@@ -771,6 +775,7 @@ function openSheetKeep(html) {
 function readAddInputs() {
   var a = document.getElementById('f-amt'); if (!a) return;
   DRAFT.amt = a.value; DRAFT.desc = document.getElementById('f-desc').value; DRAFT.date = document.getElementById('f-date').value || todayStr();
+  var sh = document.getElementById('f-share'); DRAFT.share = sh ? sh.value : '';
 }
 function saveAdd() {
   readAddInputs();
@@ -778,7 +783,12 @@ function saveAdd() {
   if (!(amt > 0)) { toast('Tutarı yaz'); return; }
   if (!DRAFT.cat) { toast('Kategori seç'); return; }
   var gelir = DRAFT.kind === 'gelir';
-  S.tx.push({ id: uid(), date: DRAFT.date, desc: DRAFT.desc.trim(), amt: gelir ? amt : -amt, cat: DRAFT.cat, src: NAKIT_DISI.indexOf(DRAFT.cat) >= 0 ? 'diger' : 'nakit', manual: true, at: Date.now(), key: 'm|' + uid() });
+  var share = parseFloat(String(DRAFT.share || '').replace(/\./g, '').replace(',', '.')), src = NAKIT_DISI.indexOf(DRAFT.cat) >= 0 ? 'diger' : 'nakit';
+  if (!gelir && share > 0 && share < amt) {
+    S.tx.push({ id: uid(), date: DRAFT.date, desc: DRAFT.desc.trim(), amt: -share, cat: DRAFT.cat, src: src, manual: true, at: Date.now(), key: 'm|' + uid() });
+    S.tx.push({ id: uid(), date: DRAFT.date, desc: (DRAFT.desc.trim() || 'ortak harcama') + ' (arkadaşlardan alacak)', amt: -(Math.round((amt - share) * 100) / 100), cat: 'Verilen Borç', src: src, manual: true, at: Date.now(), key: 'm|' + uid() });
+  } else
+  S.tx.push({ id: uid(), date: DRAFT.date, desc: DRAFT.desc.trim(), amt: gelir ? amt : -amt, cat: DRAFT.cat, src: src, manual: true, at: Date.now(), key: 'm|' + uid() });
   S.use[DRAFT.cat] = (S.use[DRAFT.cat] || 0) + 1;
   S.demo = S.demo && false;
   MONTH = mk(DRAFT.date); save(); closeSheet(); render(); toast('Kaydedildi');
@@ -833,6 +843,39 @@ function cloudPull() {
 }
 var PULL = null;
 
+
+/* ----- Geçmiş aylar (Excel aylık özetlerinden) ----- */
+var GECMIS = [
+ ['2025-10',{market:590,Beslenme:2290,'Ulaşım':50,'Bakım/Berber':2050,Giyim:900,Spor:400,'Gezi ve Etkinlikler':340,Benzin:70,Abonelikler:90,'Diğer':95},{'Gelir - kyk':3000,'Gelir - harçlık':2170}],
+ ['2025-11',{market:1285,Beslenme:1740,'Ulaşım':17,'Bakım/Berber':300,Spor:2940,'Gezi ve Etkinlikler':400,Abonelikler:185,'Diğer':95},{'Gelir - kyk':3000,'Gelir - harçlık':2575,'Gelir - iş':500}],
+ ['2025-12',{market:760,Beslenme:2585,'Ulaşım':17,'Bakım/Berber':300,Spor:1985,Benzin:100,Abonelikler:53,'Diğer':85},{'Gelir - kyk':3000,'Gelir - harçlık':3075,'Gelir - iş':500}],
+ ['2026-01',{market:955,Beslenme:955,'Bakım/Berber':550,Spor:4590,'Gezi ve Etkinlikler':100,Abonelikler:415,'Verilen Borç':295,'Diğer':20},{'Gelir - kyk':4000,'Gelir - ibb burs':10000,'Gelir - harçlık':2025}],
+ ['2026-02',{market:1130,Beslenme:320,'Bakım/Berber':400,Spor:6710,Abonelikler:50,'Verilen Borç':2700},{'Gelir - kyk':4000,'Gelir - bağcılar burs':500,'Gelir - harçlık':2290}],
+ ['2026-03',{market:985,Beslenme:1595,'Ulaşım':600,'Bakım/Berber':400,Giyim:600,Spor:995,'Gezi ve Etkinlikler':375,Abonelikler:105,'Araç ödemeleri':500,'Diğer':460},{'Gelir - kyk':4000,'Gelir - bağcılar burs':600,'Gelir - ibb burs':10000,'Gelir - harçlık':3435,'Gelir - iş':200}],
+ ['2026-04',{market:1675,Beslenme:1250,'Ulaşım':600,'Bakım/Berber':400,Giyim:1800,Spor:695,Abonelikler:108,'Araç ödemeleri':500,'Diğer':15},{'Gelir - kyk':4000,'Gelir - bağcılar burs':600,'Gelir - harçlık':1735}],
+ ['2026-05',{market:1145,Beslenme:785,'Ulaşım':630,'Bakım/Berber':400,Giyim:735,Spor:300,Abonelikler:870,'Verilen Borç':1000,'Diğer':10},{'Gelir - kyk':4000,'Gelir - bağcılar burs':800,'Gelir - harçlık':3000,'Gelir - iş':500}],
+ ['2026-06',{market:1445,Beslenme:3815,'Ulaşım':660,'Bakım/Berber':400,'Gezi ve Etkinlikler':290,Abonelikler:105},{'Gelir - kyk':4000,'Gelir - bağcılar burs':600,'Gelir - harçlık':3050,'Gelir - iş':250}],
+ ['2026-07',{market:2780,Beslenme:1520,'Ulaşım':700,'Bakım/Berber':400,Giyim:1800,'Gezi ve Etkinlikler':665,Abonelikler:800},{'Gelir - kyk':4000,'Gelir - harçlık':2020}],
+ ['2026-08',{market:2045,Beslenme:6645,'Ulaşım':660,'Bakım/Berber':400,Giyim:6600,'Gezi ve Etkinlikler':740,Abonelikler:135,'Araç ödemeleri':500},{'Gelir - kyk':4000,'Gelir - iş':9250,'Gelir - harçlık':9180}],
+ ['2026-09',{market:1270,Beslenme:2955,'Ulaşım':101,'Bakım/Berber':400,'Gezi ve Etkinlikler':4710,Abonelikler:840,'Araç ödemeleri':300,'Verilen Borç':300,'Diğer':50},{'Gelir - kyk':4000,'Gelir - iş':15250,'Gelir - harçlık':2425}],
+ ['2026-10',{market:685,Beslenme:5665,'Ulaşım':650,'Bakım/Berber':400,Giyim:1800,Spor:300,'Gezi ve Etkinlikler':1650,Abonelikler:135,'Diğer':550},{'Gelir - kyk':4000,'Gelir - iş':3500,'Gelir - harçlık':4770}]
+];
+function seedGecmis() {
+  var have = {}; S.tx.forEach(function (t) { if (t.key) have[t.key] = 1; });
+  var n = 0;
+  GECMIS.forEach(function (m) {
+    ['e', 'g'].forEach(function (kind, ki) {
+      var o = m[ki + 1];
+      Object.keys(o).forEach(function (cat) {
+        var key = 'gecmis|' + m[0] + '|' + cat; if (have[key]) return;
+        S.tx.push({ id: uid(), date: m[0] + '-15', desc: (key === 'gecmis|2026-03|Gelir - harçlık' ? 'Excel özeti (7.300 ₺ gram altın hariç)' : cat === 'Verilen Borç' ? 'Excel özeti (borç)' : 'Excel özeti'), label: '', amt: kind === 'e' ? -o[cat] : o[cat], cat: cat, src: 'diger', manual: true, at: 0, key: key });
+        n++;
+      });
+    });
+  });
+  save(); render(); toast(n ? n + ' kayıt eklendi (Ekim 2025 – Ekim 2026)' : 'Geçmiş aylar zaten ekli');
+}
+
 /* ----- Harcamayı böl ----- */
 function catBtns2(list, sel, attr) { return '<div class="cats">' + list.map(function (c) { return '<button data-' + attr + '="' + esc(c) + '" class="' + (c === sel ? 'on' : '') + '">' + esc(c.replace('Gelir - ', '')) + '</button>'; }).join('') + '</div>'; }
 function openSplit(id) {
@@ -874,7 +917,7 @@ function openQueue() {
   var q = queue();
   if (!q.length) { closeSheet(); toast('Bekleyen yok'); return; }
   var t = q[0], inc = t.amt > 0;
-  var opts = inc ? ['Yoksay', 'Gelir - harçlık', 'Gelir - iş', 'Gelir - yatırım', 'Gelir - borç', 'Verilen Borç', 'Gelir - kyk'] : ['Yoksay', 'Beslenme', 'market', 'Giyim', 'Gezi ve Etkinlikler', 'hediye', 'Verilen Borç', 'Diğer', 'Ulaşım', 'Bakım/Berber', 'Spor', 'Abonelikler'];
+  var opts = inc ? ['Yoksay', 'Nakit Geçişi', 'Gelir - harçlık', 'Gelir - iş', 'Gelir - yatırım', 'Gelir - borç', 'Verilen Borç', 'Gelir - kyk'] : ['Yoksay', 'Nakit Geçişi', 'Beslenme', 'market', 'Giyim', 'Gezi ve Etkinlikler', 'hediye', 'Verilen Borç', 'Diğer', 'Ulaşım', 'Bakım/Berber', 'Spor', 'Abonelikler'];
   var key = ruleKey(t.desc), al = key.replace(/\*+/g, '').toLocaleLowerCase('tr').trim();
   DRAFT = { q: t.id, key: key };
   var sr = matchRule(t.desc), sug = sr && sr[3] ? sr[1] : '';
@@ -1036,6 +1079,7 @@ document.addEventListener('click', function (e) {
   else if (act === 'demo') { loadDemo(); toast('Örnek veri yüklendi'); }
   else if (act === 'clear') { S = emptyState(); save(); render(); }
   else if (act === 'saveedit') { var t = S.tx.filter(function (x) { return x.id === DRAFT.edit; })[0]; if (t) { t.cat = DRAFT.cat; S.use[t.cat] = (S.use[t.cat] || 0) + 1; } save(); closeSheet(); render(); }
+  else if (act === 'gecmis') { seedGecmis(); }
   else if (act === 'split') { openSplit(DRAFT.edit); }
   else if (act === 'splitq') { openSplit(DRAFT.q); }
   else if (act === 'savesplit') { saveSplit(); }
@@ -1045,6 +1089,9 @@ document.addEventListener('click', function (e) {
     var nk = num('nakitset'), gr = num('garset'), at = Date.now();
     if (!isNaN(nk)) S.anchors.nakit = { amt: nk, date: todayStr(), at: at };
     if (!isNaN(gr)) S.anchors.garanti = { amt: gr, date: todayStr(), at: at };
+    var zr = num('zirset'), ik = num('ikset');
+    if (!isNaN(zr)) S.manual.ziraat = zr;
+    if (!isNaN(ik)) S.manual.istanbulkart = ik;
     save(); render(); toast('Bakiyeler kaydedildi');
   }
   else if (act === 'cconnect') { var u = document.getElementById('c-url').value.trim(), kk = document.getElementById('c-key').value.trim(); if (!/^https:\/\/script\.google\.com\//.test(u) || !kk) { toast('Adres ve anahtarı yaz'); return; } CLOUD = { url: u, key: kk, last: 0, err: '' }; cloudSave(); cloudStatus(); toast('Kaydedildi'); if (S.tx.length) cloudPush(true); }
